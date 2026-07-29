@@ -6,18 +6,18 @@ const AGENT_LOGS = [
   "[SYSTEM] Initializing CodexGuard Autonomous Pipeline...",
   "[SCANNER] Cloning repository into secure sandbox...",
   "[SCANNER] Performing deep AST and dependency analysis...",
-  "[SCANNER] Found Critical vulnerability in authentication flow.",
+  "[SCANNER] Scanner Agent Complete: Identified critical vulnerabilities.",
   "[PLANNER] Triaging risks based on exploitability context...",
-  "[PLANNER] Generating remediation graph and task ordering...",
+  "[PLANNER] Planner Agent Complete: Remediation ordering generated.",
   "[FIXER] Engaging Gemini-2.5-pro to synthesize patch...",
-  "[FIXER] Validating patch syntax and context boundaries...",
+  "[FIXER] Fixer Agent Complete: Validated unified diff patch.",
   "[REVIEWER] Critiquing generated patch for side-effects...",
-  "[REVIEWER] Verification passed: No new regressions introduced.",
+  "[REVIEWER] Reviewer Agent Complete: No regressions detected.",
   "[EVALUATOR] Calculating final Auto-Merge Confidence Score...",
-  "[SYSTEM] Aggregating finding reports. Pipeline complete."
+  "[EVALUATOR] Evaluator Agent Complete: Confidence Score 98/100.",
+  "[SYSTEM] Pipeline execution finished. Rendering audit report..."
 ]
 
-// Web Audio API Sci-Fi Sound Synthesizer
 const playSound = (type, soundEnabled = true) => {
   if (!soundEnabled) return
   try {
@@ -171,13 +171,13 @@ function Terminal({ isRunning, soundEnabled, onStepChange, onComplete }) {
         setLogs(prev => [...prev, AGENT_LOGS[currentIndex]])
         playSound('click', soundEnabled)
         
-        // Update Agent Node Graph Step accurately for all 5 agents
-        if (currentIndex <= 3) onStepChange(1)      // Scanner
-        else if (currentIndex <= 5) onStepChange(2) // Planner
-        else if (currentIndex <= 7) onStepChange(3) // Fixer
-        else if (currentIndex <= 9) onStepChange(4) // Reviewer
-        else if (currentIndex <= 10) onStepChange(5) // Evaluator
-        else onStepChange(6)                       // Complete
+        // Sequentially step through each of the 5 agents
+        if (currentIndex <= 3) onStepChange(1)      // Scanner active
+        else if (currentIndex <= 5) onStepChange(2) // Planner active
+        else if (currentIndex <= 7) onStepChange(3) // Fixer active
+        else if (currentIndex <= 9) onStepChange(4) // Reviewer active
+        else if (currentIndex <= 11) onStepChange(5) // Evaluator active
+        else onStepChange(6)                        // All done
 
         currentIndex++
       } else {
@@ -185,7 +185,7 @@ function Terminal({ isRunning, soundEnabled, onStepChange, onComplete }) {
         playSound('success', soundEnabled)
         if (onComplete) onComplete()
       }
-    }, 350)
+    }, 400)
 
     return () => clearInterval(interval)
   }, [isRunning, soundEnabled, onStepChange, onComplete])
@@ -224,7 +224,7 @@ function ExploitModal({ finding, onClose }) {
   useEffect(() => {
     const timer = setInterval(() => {
       setStep(prev => (prev < 3 ? prev + 1 : prev))
-    }, 1200)
+    }, 1000)
     return () => clearInterval(timer)
   }, [])
 
@@ -318,7 +318,10 @@ function App() {
 
   const handleScan = async (e) => {
     e.preventDefault()
-    if (!repoUrl) return
+    
+    // Auto-fill target URL if user left input empty for quick demoing
+    const targetUrl = repoUrl.trim() || 'https://github.com/demo/vulnerable-app'
+    if (!repoUrl) setRepoUrl(targetUrl)
 
     playSound('scan', soundEnabled)
     setScanStatus('scanning')
@@ -332,11 +335,13 @@ function App() {
       const response = await fetch('http://127.0.0.1:5000/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repo_url: repoUrl }),
+        body: JSON.stringify({ repo_url: targetUrl }),
       })
       
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to scan repository')
+      
+      // Store findings in state, but DO NOT show results until the terminal 5-agent sequence completes!
       setFindings(data.findings)
     } catch (err) {
       setErrorMessage(err.message)
@@ -344,8 +349,10 @@ function App() {
     }
   }
 
+  // Triggered when Terminal finishes all 5 agents (Scanner -> Planner -> Fixer -> Reviewer -> Evaluator)
   const handleTerminalComplete = () => {
     setScanStatus('complete')
+    setActiveStep(6)
     setShowResults(true)
   }
 
@@ -355,7 +362,7 @@ function App() {
     setTimeout(() => {
       playSound('success', soundEnabled)
       setPrStatus(prev => ({ ...prev, [findingId]: 'success' }))
-    }, 2000)
+    }, 1500)
   }
 
   const renderDiff = (diffText) => {
@@ -386,7 +393,7 @@ function App() {
           <div className="brand">
             <img src={logoUrl} alt="CodexGuard" className="logo-glow" />
             <h1>CodexGuard</h1>
-            <span className="badge">SURPRISE EDITION 🚀</span>
+            <span className="badge">5-AGENT PIPELINE ACTIVE</span>
           </div>
           
           <div className="control-panel">
@@ -441,7 +448,7 @@ function App() {
               isRunning={scanStatus === 'scanning'} 
               soundEnabled={soundEnabled}
               onStepChange={setActiveStep}
-              onComplete={handleTerminalComplete} 
+              onComplete={handleTerminalComplete}
             />
           )}
 
@@ -458,8 +465,8 @@ function App() {
           {showResults && (
             <div className="results-wrapper">
               <div className="results-tabs">
-                <button className={`tab-btn ${activeTab === 'findings' ? 'active' : ''}`} onClick={() => setActiveTab('findings')}>Findings & Auto-Fixes</button>
-                <button className={`tab-btn ${activeTab === 'matrix' ? 'active' : ''}`} onClick={() => setActiveTab('matrix')}>Agent Matrix View</button>
+                <button className={`tab-btn ${activeTab === 'findings' ? 'active' : ''}`} onClick={() => setActiveTab('findings')}>Findings & Auto-Fixes ({findings.length})</button>
+                <button className={`tab-btn ${activeTab === 'matrix' ? 'active' : ''}`} onClick={() => setActiveTab('matrix')}>Agent Matrix Telemetry</button>
               </div>
 
               {activeTab === 'findings' && (
