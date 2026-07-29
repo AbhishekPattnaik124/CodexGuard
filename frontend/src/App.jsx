@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import logoUrl from './assets/logo.png'
 
-// Simulated logs for the terminal effect
 const AGENT_LOGS = [
   "[SYSTEM] Initializing CodexGuard Autonomous Pipeline...",
   "[SCANNER] Cloning repository into secure sandbox...",
@@ -18,7 +17,42 @@ const AGENT_LOGS = [
   "[SYSTEM] Aggregating finding reports. Pipeline complete."
 ]
 
-// Canvas Particle Network Background
+// Web Audio API Sci-Fi Sound Synthesizer
+const playSound = (type, soundEnabled = true) => {
+  if (!soundEnabled) return
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    if (type === 'click') {
+      osc.frequency.setValueAtTime(800, ctx.currentTime)
+      gain.gain.setValueAtTime(0.05, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.05)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.05)
+    } else if (type === 'scan') {
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(150, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.3)
+      gain.gain.setValueAtTime(0.08, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.3)
+    } else if (type === 'success') {
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime)
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1)
+      gain.gain.setValueAtTime(0.08, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.3)
+    }
+  } catch (e) {}
+}
+
 function ParticleCanvas() {
   const canvasRef = useRef(null)
 
@@ -41,14 +75,11 @@ function ParticleCanvas() {
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
-      // Draw links
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x
           const dy = particles[i].y - particles[j].y
           const dist = Math.sqrt(dx * dx + dy * dy)
-
           if (dist < 120) {
             ctx.beginPath()
             ctx.moveTo(particles[i].x, particles[i].y)
@@ -59,15 +90,11 @@ function ParticleCanvas() {
           }
         }
       }
-
-      // Move & draw particles
       particles.forEach(p => {
         p.x += p.vx
         p.y += p.vy
-
         if (p.x < 0 || p.x > canvas.width) p.vx *= -1
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1
-
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
         ctx.fillStyle = '#6366f1'
@@ -75,18 +102,15 @@ function ParticleCanvas() {
         ctx.shadowColor = '#6366f1'
         ctx.fill()
       })
-
       animationFrameId = requestAnimationFrame(render)
     }
 
     render()
-
     const handleResize = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
     }
     window.addEventListener('resize', handleResize)
-
     return () => {
       cancelAnimationFrame(animationFrameId)
       window.removeEventListener('resize', handleResize)
@@ -96,7 +120,6 @@ function ParticleCanvas() {
   return <canvas ref={canvasRef} className="particle-canvas" />
 }
 
-// Interactive 5-Agent Flow Visualizer Component
 function AgentNodeGraph({ activeStep }) {
   const agents = [
     { id: 1, name: "SCANNER", icon: "🔍", desc: "AST & Vulnerability Detection" },
@@ -132,7 +155,7 @@ function AgentNodeGraph({ activeStep }) {
   )
 }
 
-function Terminal({ isRunning, onStepChange, onComplete }) {
+function Terminal({ isRunning, soundEnabled, onStepChange, onComplete }) {
   const [logs, setLogs] = useState([])
   const terminalRef = useRef(null)
 
@@ -146,8 +169,8 @@ function Terminal({ isRunning, onStepChange, onComplete }) {
     const interval = setInterval(() => {
       if (currentIndex < AGENT_LOGS.length) {
         setLogs(prev => [...prev, AGENT_LOGS[currentIndex]])
+        playSound('click', soundEnabled)
         
-        // Update Agent Node Graph Step
         if (currentIndex < 4) onStepChange(1)
         else if (currentIndex < 7) onStepChange(2)
         else if (currentIndex < 9) onStepChange(3)
@@ -157,12 +180,13 @@ function Terminal({ isRunning, onStepChange, onComplete }) {
         currentIndex++
       } else {
         clearInterval(interval)
+        playSound('success', soundEnabled)
         if (onComplete) onComplete()
       }
     }, 350)
 
     return () => clearInterval(interval)
-  }, [isRunning, onStepChange, onComplete])
+  }, [isRunning, soundEnabled, onStepChange, onComplete])
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -187,6 +211,56 @@ function Terminal({ isRunning, onStepChange, onComplete }) {
         {isRunning && logs.length < AGENT_LOGS.length && (
           <div className="term-line typing"><span className="cursor">█</span></div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function ExploitModal({ finding, onClose }) {
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStep(prev => (prev < 3 ? prev + 1 : prev))
+    }, 1200)
+    return () => clearInterval(timer)
+  }, [])
+
+  if (!finding) return null
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-content glass-panel">
+        <div className="modal-header">
+          <h3>⚔️ EXPLOIT SIMULATOR: {finding.type}</h3>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="exploit-step">
+            <span className="step-tag">ATTACK VECTOR</span>
+            <p>Attempting unauthorized access via vulnerable endpoint...</p>
+          </div>
+          
+          {step >= 1 && (
+            <div className="exploit-step threat">
+              <span className="step-tag red">EXPLOIT ATTEMPT</span>
+              <code>POST /api/v1/auth payload: &#123;"secret": "EXPLOIT_PAYLOAD"&#125;</code>
+            </div>
+          )}
+
+          {step >= 2 && (
+            <div className="exploit-step blocked">
+              <span className="step-tag green">CODEXGUARD DEFENSE</span>
+              <p>🛡️ Fixer Agent patch verified. Hardcoded secret refactored to environment variable. Attack mitigated!</p>
+            </div>
+          )}
+
+          {step >= 3 && (
+            <div className="exploit-result">
+              <span className="badge-success">EXPLOIT DEFENDED 100%</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -237,11 +311,14 @@ function App() {
   const [prStatus, setPrStatus] = useState({})
   const [showResults, setShowResults] = useState(false)
   const [activeTab, setActiveTab] = useState('findings')
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [exploitFinding, setExploitFinding] = useState(null)
 
   const handleScan = async (e) => {
     e.preventDefault()
     if (!repoUrl) return
 
+    playSound('scan', soundEnabled)
     setScanStatus('scanning')
     setActiveStep(1)
     setShowResults(false)
@@ -271,8 +348,10 @@ function App() {
   }
 
   const handleCreatePR = (findingId) => {
+    playSound('click', soundEnabled)
     setPrStatus(prev => ({ ...prev, [findingId]: 'loading' }))
     setTimeout(() => {
+      playSound('success', soundEnabled)
       setPrStatus(prev => ({ ...prev, [findingId]: 'success' }))
     }, 2000)
   }
@@ -292,13 +371,20 @@ function App() {
     <div className="app-wrapper">
       <ParticleCanvas />
       
+      {exploitFinding && (
+        <ExploitModal 
+          finding={exploitFinding} 
+          onClose={() => setExploitFinding(null)} 
+        />
+      )}
+
       <div className="dashboard">
         {/* SIDEBAR */}
         <aside className="sidebar glass-panel">
           <div className="brand">
             <img src={logoUrl} alt="CodexGuard" className="logo-glow" />
             <h1>CodexGuard</h1>
-            <span className="badge">50/10 UNBEATABLE</span>
+            <span className="badge">SURPRISE EDITION 🚀</span>
           </div>
           
           <div className="control-panel">
@@ -319,6 +405,15 @@ function App() {
                 {scanStatus === 'scanning' ? 'SWARM ENGAGED...' : 'DEPLOY 5-AGENT SWARM'}
               </button>
             </form>
+          </div>
+
+          <div className="sound-toggle">
+            <button 
+              className={`btn-sound ${soundEnabled ? 'active' : ''}`}
+              onClick={() => setSoundEnabled(!soundEnabled)}
+            >
+              {soundEnabled ? '🔊 SCI-FI AUDIO ON' : '🔇 AUDIO OFF'}
+            </button>
           </div>
 
           <div className="status-indicator">
@@ -342,6 +437,7 @@ function App() {
           {(scanStatus === 'scanning' || showResults) && (
             <Terminal 
               isRunning={scanStatus === 'scanning'} 
+              soundEnabled={soundEnabled}
               onStepChange={setActiveStep}
               onComplete={handleTerminalComplete} 
             />
@@ -408,6 +504,12 @@ function App() {
                         </div>
 
                         <div className="card-actions">
+                          <button 
+                            className="btn-exploit"
+                            onClick={() => setExploitFinding(finding)}
+                          >
+                            ⚔️ SIMULATE EXPLOIT
+                          </button>
                           <button 
                             onClick={() => handleCreatePR(finding.id)}
                             disabled={prStatus[finding.id] === 'loading' || prStatus[finding.id] === 'success'}
