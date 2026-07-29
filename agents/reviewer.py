@@ -4,7 +4,10 @@ from pydantic import BaseModel
 from google import genai
 from google.genai import types
 
-client = genai.Client()
+try:
+    client = genai.Client()
+except Exception:
+    client = None
 
 class ReviewResult(BaseModel):
     finding_type: str
@@ -52,3 +55,4 @@ if __name__ == "__main__":
         print(json.dumps(json.loads(res), indent=2))
     except Exception as e:
         print(f"Error: {e}")
+

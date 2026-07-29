@@ -6,7 +6,10 @@ from google import genai
 from google.genai import types
 
 # Initialize the Gemini client
-client = genai.Client()
+try:
+    client = genai.Client()
+except Exception:
+    client = None
 
 class FixPatch(BaseModel):
     file: str
@@ -83,3 +86,4 @@ def get_user():
     except Exception as e:
         print(f"Error running agent: {e}")
         print("Make sure your GEMINI_API_KEY environment variable is set.")
+

@@ -69,3 +69,4 @@ def execute_pipeline(code_snippet: str, filename: str = "snippet.py"):
         print(f"Pipeline Execution Error: {e}")
         # In a real app we'd throw this, but for the hackathon we'll return a mock error state
         raise e
+

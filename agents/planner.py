@@ -6,7 +6,10 @@ from google import genai
 from google.genai import types
 
 # Initialize the Gemini client
-client = genai.Client()
+try:
+    client = genai.Client()
+except Exception:
+    client = None
 
 class FixPlanItem(BaseModel):
     finding_type: str
@@ -68,3 +71,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error running agent: {e}")
         print("Make sure your GEMINI_API_KEY environment variable is set.")
+

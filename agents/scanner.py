@@ -7,7 +7,10 @@ from google.genai import types
 
 # Initialize the Gemini client
 # Note: GEMINI_API_KEY environment variable needs to be set.
-client = genai.Client()
+try:
+    client = genai.Client()
+except Exception:
+    client = None
 
 class Finding(BaseModel):
     type: str
@@ -65,3 +68,4 @@ def get_user():
     except Exception as e:
         print(f"Error running agent: {e}")
         print("Make sure your GEMINI_API_KEY environment variable is set.")
+
