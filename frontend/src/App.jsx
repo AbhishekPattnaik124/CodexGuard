@@ -3,22 +3,25 @@ import './App.css'
 import logoUrl from './assets/logo.png'
 
 const AGENT_LOGS = [
-  "[SYSTEM] Initializing CodexGuard Autonomous Pipeline...",
-  "[SCANNER] Cloning repository into secure sandbox...",
-  "[SCANNER] Performing deep AST and dependency analysis...",
-  "[SCANNER] Scanner Agent Complete: Identified critical vulnerabilities.",
-  "[PLANNER] Triaging risks based on exploitability context...",
-  "[PLANNER] Planner Agent Complete: Remediation ordering generated.",
-  "[FIXER] Engaging Gemini-2.5-pro to synthesize patch...",
-  "[FIXER] Fixer Agent Complete: Validated unified diff patch.",
-  "[REVIEWER] Critiquing generated patch for side-effects...",
-  "[REVIEWER] Reviewer Agent Complete: No regressions detected.",
+  "[SYSTEM] Initializing CodexGuard Autonomous Swarm Engine...",
+  "[SCANNER] Parsing AST structure and dependency tree...",
+  "[SCANNER] Vulnerability detected: Hardcoded Secret & SQL Injection vector.",
+  "[PLANNER] Prioritizing remediation sequence based on exploitability index...",
+  "[FIXER] Engaging Gemini-2.5-pro to synthesize unified diff patch...",
+  "[FIXER] Unified diff patch generated successfully.",
+  "[REVIEWER] Re-evaluating patch against original risk profile...",
+  "[REVIEWER] Debate Consensus: Zero regression risk. Patch approved.",
   "[EVALUATOR] Calculating final Auto-Merge Confidence Score...",
-  "[EVALUATOR] Evaluator Agent Complete: Confidence Score 98/100.",
-  "[SYSTEM] Pipeline execution finished. Rendering audit report..."
+  "[EVALUATOR] Score: 98/100. Auto-merge criteria satisfied.",
+  "[SYSTEM] Remediated codebase verified. Audit complete."
 ]
 
-// Web Audio API Sci-Fi Sound Synthesizer
+const PRESETS = [
+  { label: "⚡ Payment Gateway (SQLi)", url: "https://github.com/enterprise/payment-gateway" },
+  { label: "🔐 Auth Microservice (Secrets)", url: "https://github.com/enterprise/auth-service" },
+  { label: "🌐 Cloud Backend (RCE)", url: "https://github.com/enterprise/k8s-cloud-backend" }
+]
+
 const playSound = (type, soundEnabled = true) => {
   if (!soundEnabled) return
   try {
@@ -54,7 +57,6 @@ const playSound = (type, soundEnabled = true) => {
   } catch (e) {}
 }
 
-// AI Robotic Speech Engine
 const speakAgent = (text, voiceEnabled = true) => {
   if (!voiceEnabled || !('speechSynthesis' in window)) return
   try {
@@ -66,8 +68,7 @@ const speakAgent = (text, voiceEnabled = true) => {
   } catch (e) {}
 }
 
-// Particle Background Canvas
-function ParticleCanvas() {
+function ParticleCanvas({ triggerBurst }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -79,13 +80,28 @@ function ParticleCanvas() {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    const particles = Array.from({ length: 60 }, () => ({
+    let particles = Array.from({ length: 70 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       vx: (Math.random() - 0.5) * 0.8,
       vy: (Math.random() - 0.5) * 0.8,
       radius: Math.random() * 2 + 1,
+      color: '#6366f1'
     }))
+
+    if (triggerBurst) {
+      // Add celebratory green/gold particles on PR success
+      for (let i = 0; i < 40; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6,
+          radius: Math.random() * 4 + 2,
+          color: Math.random() > 0.5 ? '#10b981' : '#f59e0b'
+        })
+      }
+    }
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -111,9 +127,9 @@ function ParticleCanvas() {
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
-        ctx.fillStyle = '#6366f1'
-        ctx.shadowBlur = 10
-        ctx.shadowColor = '#6366f1'
+        ctx.fillStyle = p.color
+        ctx.shadowBlur = 12
+        ctx.shadowColor = p.color
         ctx.fill()
       })
       animationFrameId = requestAnimationFrame(render)
@@ -129,12 +145,11 @@ function ParticleCanvas() {
       cancelAnimationFrame(animationFrameId)
       window.removeEventListener('resize', handleResize)
     }
-  }, [])
+  }, [triggerBurst])
 
   return <canvas ref={canvasRef} className="particle-canvas" />
 }
 
-// Cyber Radar Scanner Visualizer
 function CyberRadar() {
   const canvasRef = useRef(null)
 
@@ -151,7 +166,6 @@ function CyberRadar() {
       const cy = canvas.height / 2
       const radius = Math.min(cx, cy) - 10
 
-      // Outer rings
       ctx.beginPath()
       ctx.arc(cx, cy, radius, 0, Math.PI * 2)
       ctx.arc(cx, cy, radius * 0.6, 0, Math.PI * 2)
@@ -160,7 +174,6 @@ function CyberRadar() {
       ctx.lineWidth = 1
       ctx.stroke()
 
-      // Crosshairs
       ctx.beginPath()
       ctx.moveTo(cx - radius, cy)
       ctx.lineTo(cx + radius, cy)
@@ -169,7 +182,6 @@ function CyberRadar() {
       ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)'
       ctx.stroke()
 
-      // Radar Sweep
       ctx.beginPath()
       ctx.moveTo(cx, cy)
       ctx.arc(cx, cy, radius, angle, angle + 0.4)
@@ -246,14 +258,12 @@ function Terminal({ isRunning, soundEnabled, voiceEnabled, onStepChange, onCompl
         setLogs(prev => [...prev, currentLog])
         playSound('click', soundEnabled)
         
-        // Voice Announcements on key steps
         if (currentIndex === 1) speakAgent("Scanner agent analyzing codebase AST", voiceEnabled)
         if (currentIndex === 4) speakAgent("Planner agent triaging risk exploitability", voiceEnabled)
         if (currentIndex === 6) speakAgent("Fixer agent synthesizing unified diff patch", voiceEnabled)
         if (currentIndex === 8) speakAgent("Reviewer agent auditing patch for regression", voiceEnabled)
         if (currentIndex === 10) speakAgent("Evaluator agent scoring auto merge confidence", voiceEnabled)
 
-        // Sequentially step through each of the 5 agents
         if (currentIndex <= 3) onStepChange(1)
         else if (currentIndex <= 5) onStepChange(2)
         else if (currentIndex <= 7) onStepChange(3)
@@ -268,7 +278,7 @@ function Terminal({ isRunning, soundEnabled, voiceEnabled, onStepChange, onCompl
         speakAgent("Pipeline complete. Audit report generated.", voiceEnabled)
         if (onComplete) onComplete()
       }
-    }, 400)
+    }, 380)
 
     return () => clearInterval(interval)
   }, [isRunning, soundEnabled, voiceEnabled, onStepChange, onComplete])
@@ -431,11 +441,13 @@ function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [exploitFinding, setExploitFinding] = useState(null)
   const [showCert, setShowCert] = useState(false)
+  const [triggerBurst, setTriggerBurst] = useState(false)
 
-  const handleScan = async (e) => {
-    e.preventDefault()
-    const targetUrl = repoUrl.trim() || 'https://github.com/demo/vulnerable-app'
-    if (!repoUrl) setRepoUrl(targetUrl)
+  const handleScan = async (e, customUrl) => {
+    if (e) e.preventDefault()
+    
+    const targetUrl = customUrl || repoUrl.trim() || 'https://github.com/demo/vulnerable-app'
+    setRepoUrl(targetUrl)
 
     playSound('scan', soundEnabled)
     setScanStatus('scanning')
@@ -474,6 +486,8 @@ function App() {
       playSound('success', soundEnabled)
       speakAgent("Pull request merged to main branch automatically", voiceEnabled)
       setPrStatus(prev => ({ ...prev, [findingId]: 'success' }))
+      setTriggerBurst(true)
+      setTimeout(() => setTriggerBurst(false), 3000)
     }, 1500)
   }
 
@@ -490,7 +504,7 @@ function App() {
 
   return (
     <div className="app-wrapper">
-      <ParticleCanvas />
+      <ParticleCanvas triggerBurst={triggerBurst} />
       
       {exploitFinding && (
         <ExploitModal 
@@ -513,7 +527,7 @@ function App() {
           <div className="brand">
             <img src={logoUrl} alt="CodexGuard" className="logo-glow" />
             <h1>CodexGuard</h1>
-            <span className="badge">BEYOND LIMITS EDITION</span>
+            <span className="badge">FINAL FRONTIER EDITION</span>
           </div>
           
           <div className="control-panel">
@@ -534,6 +548,20 @@ function App() {
                 {scanStatus === 'scanning' ? 'SWARM ENGAGED...' : 'DEPLOY 5-AGENT SWARM'}
               </button>
             </form>
+
+            <div className="preset-bar">
+              <span>DEMO PRESETS:</span>
+              {PRESETS.map((p, idx) => (
+                <button 
+                  key={idx} 
+                  className="preset-btn"
+                  onClick={(e) => handleScan(e, p.url)}
+                  disabled={scanStatus === 'scanning'}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <CyberRadar />
@@ -595,6 +623,7 @@ function App() {
             <div className="results-wrapper">
               <div className="results-tabs">
                 <button className={`tab-btn ${activeTab === 'findings' ? 'active' : ''}`} onClick={() => setActiveTab('findings')}>Findings & Auto-Fixes ({findings.length})</button>
+                <button className={`tab-btn ${activeTab === 'debate' ? 'active' : ''}`} onClick={() => setActiveTab('debate')}>Agent Consensus Debate Stream</button>
                 <button className={`tab-btn ${activeTab === 'matrix' ? 'active' : ''}`} onClick={() => setActiveTab('matrix')}>Agent Matrix Telemetry</button>
                 <button className="tab-btn cert-tab" onClick={() => setShowCert(true)}>📜 EXPORT AUDIT CERTIFICATE</button>
               </div>
@@ -662,6 +691,34 @@ function App() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'debate' && (
+                <div className="debate-view glass-panel">
+                  <h3>Agent Consensus & Debate Stream</h3>
+                  <div className="debate-stream">
+                    <div className="chat-bubble fixer">
+                      <span className="bubble-author">🛠️ FIXER AGENT</span>
+                      <p>"Proposed string sanitization logic for SQL parameters in auth module."</p>
+                    </div>
+                    <div className="chat-bubble reviewer rejected">
+                      <span className="bubble-author">🧐 REVIEWER AGENT</span>
+                      <p>"CRITIQUE: String sanitization is insufficient. Parameterized query tuple binding required to eliminate injection vector."</p>
+                    </div>
+                    <div className="chat-bubble fixer resolved">
+                      <span className="bubble-author">🛠️ FIXER AGENT (RE-TRY 2)</span>
+                      <p>"Updating patch to use SQLite parameterized query tuple `(user_id,)`. Diffs updated."</p>
+                    </div>
+                    <div className="chat-bubble reviewer approved">
+                      <span className="bubble-author">🧐 REVIEWER AGENT</span>
+                      <p>"VERIFIED: Parameterized tuple eliminates vector. Zero regression risk detected. Approval granted."</p>
+                    </div>
+                    <div className="chat-bubble evaluator">
+                      <span className="bubble-author">⚖️ EVALUATOR AGENT</span>
+                      <p>"CONSENSUS REACHED: Auto-Merge Confidence Score assigned: 98/100."</p>
+                    </div>
                   </div>
                 </div>
               )}
