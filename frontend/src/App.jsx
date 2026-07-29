@@ -171,11 +171,13 @@ function Terminal({ isRunning, soundEnabled, onStepChange, onComplete }) {
         setLogs(prev => [...prev, AGENT_LOGS[currentIndex]])
         playSound('click', soundEnabled)
         
-        if (currentIndex < 4) onStepChange(1)
-        else if (currentIndex < 7) onStepChange(2)
-        else if (currentIndex < 9) onStepChange(3)
-        else if (currentIndex < 11) onStepChange(4)
-        else onStepChange(5)
+        // Update Agent Node Graph Step accurately for all 5 agents
+        if (currentIndex <= 3) onStepChange(1)      // Scanner
+        else if (currentIndex <= 5) onStepChange(2) // Planner
+        else if (currentIndex <= 7) onStepChange(3) // Fixer
+        else if (currentIndex <= 9) onStepChange(4) // Reviewer
+        else if (currentIndex <= 10) onStepChange(5) // Evaluator
+        else onStepChange(6)                       // Complete
 
         currentIndex++
       } else {
