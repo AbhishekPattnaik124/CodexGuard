@@ -68,6 +68,18 @@ const speakAgent = (text, voiceEnabled = true) => {
   } catch (e) {}
 }
 
+function AudioSpectrum() {
+  return (
+    <div className="audio-spectrum-bar">
+      <div style={{animationDelay: '0.1s'}}></div>
+      <div style={{animationDelay: '0.3s'}}></div>
+      <div style={{animationDelay: '0.2s'}}></div>
+      <div style={{animationDelay: '0.4s'}}></div>
+      <div style={{animationDelay: '0.15s'}}></div>
+    </div>
+  )
+}
+
 function ParticleCanvas({ triggerBurst }) {
   const canvasRef = useRef(null)
 
@@ -86,19 +98,18 @@ function ParticleCanvas({ triggerBurst }) {
       vx: (Math.random() - 0.5) * 0.8,
       vy: (Math.random() - 0.5) * 0.8,
       radius: Math.random() * 2 + 1,
-      color: '#6366f1'
+      color: '#06b6d4'
     }))
 
     if (triggerBurst) {
-      // Add celebratory green/gold particles on PR success
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 50; i++) {
         particles.push({
           x: canvas.width / 2,
           y: canvas.height / 2,
-          vx: (Math.random() - 0.5) * 6,
-          vy: (Math.random() - 0.5) * 6,
+          vx: (Math.random() - 0.5) * 7,
+          vy: (Math.random() - 0.5) * 7,
           radius: Math.random() * 4 + 2,
-          color: Math.random() > 0.5 ? '#10b981' : '#f59e0b'
+          color: Math.random() > 0.5 ? '#10b981' : '#38bdf8'
         })
       }
     }
@@ -114,7 +125,7 @@ function ParticleCanvas({ triggerBurst }) {
             ctx.beginPath()
             ctx.moveTo(particles[i].x, particles[i].y)
             ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `rgba(99, 102, 241, ${1 - dist / 120 * 0.8})`
+            ctx.strokeStyle = `rgba(6, 182, 212, ${1 - dist / 120 * 0.8})`
             ctx.lineWidth = 0.5
             ctx.stroke()
           }
@@ -170,7 +181,7 @@ function CyberRadar() {
       ctx.arc(cx, cy, radius, 0, Math.PI * 2)
       ctx.arc(cx, cy, radius * 0.6, 0, Math.PI * 2)
       ctx.arc(cx, cy, radius * 0.3, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.2)'
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.3)'
       ctx.lineWidth = 1
       ctx.stroke()
 
@@ -179,14 +190,14 @@ function CyberRadar() {
       ctx.lineTo(cx + radius, cy)
       ctx.moveTo(cx, cy - radius)
       ctx.lineTo(cx, cy + radius)
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)'
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.2)'
       ctx.stroke()
 
       ctx.beginPath()
       ctx.moveTo(cx, cy)
       ctx.arc(cx, cy, radius, angle, angle + 0.4)
       ctx.closePath()
-      ctx.fillStyle = 'rgba(6, 182, 212, 0.25)'
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.35)'
       ctx.fill()
 
       angle += 0.04
@@ -504,6 +515,7 @@ function App() {
 
   return (
     <div className="app-wrapper">
+      <div className="hex-grid"></div>
       <ParticleCanvas triggerBurst={triggerBurst} />
       
       {exploitFinding && (
@@ -527,7 +539,7 @@ function App() {
           <div className="brand">
             <img src={logoUrl} alt="CodexGuard" className="logo-glow" />
             <h1>CodexGuard</h1>
-            <span className="badge">FINAL FRONTIER EDITION</span>
+            <span className="badge">HUD UNBEATABLE V3</span>
           </div>
           
           <div className="control-panel">
@@ -579,6 +591,7 @@ function App() {
             >
               {voiceEnabled ? '🗣️ AI VOICE ANNOUNCER ON' : '🔇 VOICE OFF'}
             </button>
+            {voiceEnabled && <AudioSpectrum />}
           </div>
 
           <div className="status-indicator">
@@ -634,7 +647,7 @@ function App() {
                   
                   <div className="findings-feed">
                     {findings.map((finding, idx) => (
-                      <div key={finding.id} className={`cyber-card severity-${finding.severity}`} style={{animationDelay: `${idx * 0.2}s`}}>
+                      <div key={finding.id} className={`cyber-card glass-panel severity-${finding.severity}`} style={{animationDelay: `${idx * 0.2}s`}}>
                         <div className="card-header">
                           <div className="header-left">
                             <span className="severity-badge">{finding.severity.toUpperCase()}</span>
