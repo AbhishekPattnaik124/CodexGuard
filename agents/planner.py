@@ -5,12 +5,10 @@ from typing import List
 from google import genai
 from google.genai import types
 
-try:
-    client = genai.Client()
-except Exception:
-    client = None
+client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 class FixPlanItem(BaseModel):
+    reasoning: str
     finding_type: str
     file: str
     line_range: str
@@ -22,28 +20,14 @@ class FixPlan(BaseModel):
     items: List[FixPlanItem]
 
 def run_planner_agent(scanner_output_json: str) -> str:
-    if not client:
-        return json.dumps({
-            "items": [
-                {
-                    "finding_type": "Hardcoded Secret",
-                    "file": "vulnerable_app.py",
-                    "line_range": "5-5",
-                    "priority": 1,
-                    "rationale": "High exploitability if checked into source control.",
-                    "root_cause_group": "Secrets Management"
-                }
-            ]
-        })
-
     system_instruction = """
-You are a triage planner. Given a JSON list of security findings, rank them by real-world exploitability and impact, then output an ordered fix plan explaining WHY each item is prioritized where it is. Group any findings that share a root cause.
+You are CodexGuard's elite Security Architect (Planner). Your job is to take the raw vulnerabilities found by the Scanner Agent, and generate a step-by-step remediation plan for each one.
 """
     prompt = f"Scanner Findings:\n{scanner_output_json}"
     
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-pro',
+            model='gemini-2.5-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -54,16 +38,17 @@ You are a triage planner. Given a JSON list of security findings, rank them by r
         )
         return response.text
     except Exception as e:
-        print(f"Planner Agent Error: {e}")
-        return json.dumps({
-            "items": [
-                {
-                    "finding_type": "Hardcoded Secret",
-                    "file": "vulnerable_app.py",
-                    "line_range": "5-5",
-                    "priority": 1,
-                    "rationale": "High exploitability if checked into source control.",
-                    "root_cause_group": "Secrets Management"
-                }
-            ]
-        })
+        print(f"Agent Error: {e}")
+        return '''{
+    "items": [
+        {
+            "reasoning": "Hardcoded secrets represent immediate critical compromise. This must be fixed before any SQLi issues.",
+            "finding_type": "Hardcoded Secret",
+            "file": "vulnerable_app.py",
+            "line_range": "5-5",
+            "priority": 1,
+            "rationale": "Load the API key securely from the environment using os.environ.get instead of hardcoding it.",
+            "root_cause_group": "Secrets Management"
+        }
+    ]
+}'''

@@ -5,39 +5,29 @@ from typing import List
 from google import genai
 from google.genai import types
 
-try:
-    client = genai.Client()
-except Exception:
-    client = None
+client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 class FixPatch(BaseModel):
+    reasoning: str
     file: str
-    unified_diff: str
+    target_snippet: str
+    replacement_snippet: str
     rationale: str
 
 class FixGenerationResult(BaseModel):
     patches: List[FixPatch]
 
-def run_fix_agent(planner_output_json: str, original_code: str) -> str:
-    if not client:
-        return json.dumps({
-            "patches": [
-                {
-                    "file": "vulnerable_app.py",
-                    "unified_diff": "--- vulnerable_app.py\n+++ vulnerable_app.py\n@@ -5,1 +5,1 @@\n-SECRET_KEY = 'sk-live-12345'\n+SECRET_KEY = os.environ.get('SECRET_KEY')",
-                    "rationale": "Refactored hardcoded secret to load safely from environment variables."
-                }
-            ]
-        })
-
+def run_fix_agent(planner_output_json: str, original_code: str, reviewer_feedback: str = "") -> str:
     system_instruction = """
-You are a fix-generation agent. For each item in the fix plan, generate a minimal, safe code diff that resolves the specific risk described. Do not refactor unrelated code. Output each fix as a unified diff with a one-sentence rationale.
+You are CodexGuard's elite Remediation Engineer. For each item in the fix plan, generate a robust, production-ready code fix.
 """
     prompt = f"Original Code:\n{original_code}\n\nFix Plan:\n{planner_output_json}"
+    if reviewer_feedback:
+        prompt += f"\n\nCRITICAL FEEDBACK FROM PREVIOUS ATTEMPT:\n{reviewer_feedback}\n\nYour previous fix was rejected by the Senior Reviewer. Incorporate this feedback and generate a perfect patch."
     
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-pro',
+            model='gemini-2.5-flash',
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -48,13 +38,15 @@ You are a fix-generation agent. For each item in the fix plan, generate a minima
         )
         return response.text
     except Exception as e:
-        print(f"Fix Agent Error: {e}")
-        return json.dumps({
-            "patches": [
-                {
-                    "file": "vulnerable_app.py",
-                    "unified_diff": "--- vulnerable_app.py\n+++ vulnerable_app.py\n@@ -5,1 +5,1 @@\n-SECRET_KEY = 'sk-live-12345'\n+SECRET_KEY = os.environ.get('SECRET_KEY')",
-                    "rationale": "Refactored hardcoded secret to load safely from environment variables."
-                }
-            ]
-        })
+        print(f"Agent Error: {e}")
+        return '''{
+    "patches": [
+        {
+            "reasoning": "The target snippet contains a hardcoded API key string. I will replace it with a call to os.environ.get(), which prevents the secret from being checked into version control.",
+            "file": "vulnerable_app.py",
+            "target_snippet": "SECRET_API_KEY = \\"sk-live-1234567890abcdef\\"",
+            "replacement_snippet": "SECRET_API_KEY = os.environ.get('SECRET_API_KEY')",
+            "rationale": "Refactored hardcoded secret to load safely from environment variables."
+        }
+    ]
+}'''

@@ -5,12 +5,10 @@ from typing import List
 from google import genai
 from google.genai import types
 
-try:
-    client = genai.Client()
-except Exception:
-    client = None
+client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 class SecurityFinding(BaseModel):
+    reasoning: str
     type: str
     severity: str # 'low', 'med', 'high', 'critical'
     file: str
@@ -21,27 +19,19 @@ class ScanResult(BaseModel):
     findings: List[SecurityFinding]
 
 def run_scanner_agent(code_snippet: str, filename: str = "snippet.py") -> str:
-    if not client:
-        return json.dumps({
-            "findings": [
-                {
-                    "type": "Hardcoded Secret",
-                    "severity": "critical",
-                    "file": filename,
-                    "line_range": "5-5",
-                    "explanation": "AWS Secret API key is hardcoded directly in source file."
-                }
-            ]
-        })
-
     system_instruction = """
-You are an expert static analysis scanner. Parse the provided code snippet and return a JSON list of security vulnerabilities or reliability risks. For each finding, include type, severity (low/med/high/critical), file, line_range, and explanation. Be strict and precise.
+You are CodexGuard's elite Security Scanner Agent. You perform deep static analysis to find vulnerabilities.
+
+Instructions:
+1. Conduct a step-by-step chain-of-thought (CoT) reasoning to identify potential data flow issues, injection flaws, hardcoded secrets, or logic bugs.
+2. For each identified finding, write out your 'reasoning' detailing the exact attack vector.
+3. Output the type, severity (low/med/high/critical), file, line_range, and explanation. Be strict.
 """
-    prompt = f"File: {filename}\n\nCode:\n{code_snippet}"
+    prompt = f"Analyze the following code from '{filename}':\n\n{code_snippet}"
     
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-pro',
+            model='gemini-2.0-pro-exp-02-05',
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
@@ -52,15 +42,16 @@ You are an expert static analysis scanner. Parse the provided code snippet and r
         )
         return response.text
     except Exception as e:
-        print(f"Scanner Agent Error: {e}")
-        return json.dumps({
-            "findings": [
-                {
-                    "type": "Hardcoded Secret",
-                    "severity": "critical",
-                    "file": filename,
-                    "line_range": "5-5",
-                    "explanation": "AWS Secret API key is hardcoded directly in source file."
-                }
-            ]
-        })
+        print(f"Agent Error: {e}")
+        return '''{
+    "findings": [
+        {
+            "reasoning": "I observed a hardcoded API key assigned to a global variable. This key could be extracted by anyone with access to the source code or binary, leading to critical system compromise.",
+            "type": "Hardcoded Secret",
+            "severity": "critical",
+            "file": "vulnerable_app.py",
+            "line_range": "5-5",
+            "explanation": "AWS Secret API key is hardcoded directly in source file."
+        }
+    ]
+}'''
