@@ -37,7 +37,9 @@ export function AuditLogs({ isRunning, onStepChange, onComplete }) {
     setLogs([]);
     
     // Connect to WebSocket
-    socketRef.current = io('http://127.0.0.1:5000');
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://codexguard-backend.onrender.com';
+    socketRef.current = io(API_BASE_URL);
+
     
     socketRef.current.on('connect', () => {
         setLogs(prev => [...prev, "ESTABLISHED SECURE WEBSOCKET LINK TO NEURAL CORE..."]);

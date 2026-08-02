@@ -40,8 +40,10 @@ function App() {
     setPrStatus({})
     audioEngine.enable()
 
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://codexguard-backend.onrender.com';
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/scan', {
+      const response = await fetch(`${API_BASE_URL}/api/scan`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ repo_url: targetUrl }),
@@ -68,8 +70,10 @@ function App() {
 
   const handleApplyFix = async (finding) => {
     setPrStatus(prev => ({ ...prev, [finding.id]: 'loading' }))
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://codexguard-backend.onrender.com';
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/apply-patch', {
+      const response = await fetch(`${API_BASE_URL}/api/apply-patch`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
